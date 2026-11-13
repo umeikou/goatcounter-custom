@@ -577,7 +577,7 @@ func (s Site) IDOrParent() SiteID {
 // user intact.
 func (s Site) DeleteAll(ctx context.Context) error {
 	return zdb.TX(ctx, func(ctx context.Context) error {
-		for _, t := range append(statTables, "campaign_stats", "hit_counts", "ref_counts", "hits", "paths") {
+		for _, t := range append(statTables, "campaign_stats", "hit_counts", "click_counts", "ref_counts", "hits", "paths") {
 			err := zdb.Exec(ctx, `delete from `+t+` where site_id=:id`, map[string]any{"id": s.ID})
 			if err != nil {
 				return errors.Wrap(err, "Site.DeleteAll: delete "+t)
@@ -617,6 +617,11 @@ func (s Site) DeleteOlderThan(ctx context.Context, days int) error {
 			return errors.Wrap(err, "Site.DeleteOlderThan: delete hit_counts")
 		}
 		err = zdb.Exec(ctx, `/* Site.DeleteOlderThan */
+			delete from click_counts where site_id=$1 and hour < `+ival, s.ID)
+		if err != nil {
+			return errors.Wrap(err, "Site.DeleteOlderThan: delete click_counts")
+		}
+		err = zdb.Exec(ctx, `/* Site.DeleteOlderThan */
 			delete from ref_counts where site_id=$1 and hour < `+ival, s.ID)
 		if err != nil {
 			return errors.Wrap(err, "Site.DeleteOlderThan: delete ref_counts")
@@ -631,7 +636,11 @@ func (s Site) DeleteOlderThan(ctx context.Context, days int) error {
 		if len(pathIDs) > 0 {
 			var remainPath []SiteID
 			err := zdb.Select(ctx, &remainPath, `/* Site.DeleteOlderThan */
-				select path_id from hit_counts where site_id=:site_id and path_id :in (:paths)`,
+				select path_id from hit_counts
+				where site_id=:site_id and path_id :in (:paths)
+				union
+				select path_id from click_counts
+				where site_id=:site_id and path_id :in (:paths)`,
 				map[string]any{
 					"site_id": s.ID,
 					"paths":   db2.Array(ctx, pathIDs),

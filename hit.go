@@ -384,7 +384,7 @@ func (h *Hits) TestList(ctx context.Context, siteOnly bool) error {
 func (h *Hits) Purge(ctx context.Context, pathIDs []PathID) error {
 	return zdb.TX(ctx, func(ctx context.Context) error {
 		siteID := MustGetSite(ctx).ID
-		for _, t := range append(statTables, "hit_counts", "ref_counts", "hits", "paths") {
+		for _, t := range append(statTables, "hit_counts", "click_counts", "ref_counts", "hits", "paths") {
 			err := zdb.Exec(ctx, `/* Hits.Purge */
 				delete from :tbl where site_id=:site_id and path_id :in (:paths)`,
 				map[string]any{

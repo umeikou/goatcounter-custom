@@ -133,6 +133,7 @@ func (h backend) Mount(r chi.Router, db zdb.DB, dev, saas bool, domainStatic str
 		}
 		{
 			af := a.With(loggedIn, addz18n())
+			clicks{}.mount(af)
 			settings{}.mount(af, ratelimits)
 
 			Newi18n().mount(af)

@@ -1,0 +1,60 @@
+{{template "_backend_top.gohtml" .}}
+
+<style>
+.click-header { display:flex; justify-content:space-between; align-items:flex-end; gap:1em; flex-wrap:wrap; }
+.click-period { display:flex; align-items:flex-end; gap:.6em; flex-wrap:wrap; }
+.click-period label { display:flex; flex-direction:column; gap:.2em; }
+.click-breadcrumbs { margin:.8em 0 1.2em; }
+.click-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(10em,1fr)); gap:1em; margin:1em 0; }
+.click-card { background:var(--bg-highlight); border-radius:.3em; padding:1em; }
+.click-card strong { display:block; font-size:1.7em; margin-top:.2em; }
+.click-table { width:100%; }
+.click-table .num { text-align:right; width:11em; }
+.click-note { color:var(--text-light); }
+</style>
+
+<div class="click-header">
+	<div>
+		<h1>点击分析</h1>
+		<p class="click-note">按项目 → 页面 → 点击类型 → 按钮逐级查看规范点击事件。</p>
+	</div>
+	<form class="click-period" method="get">
+		<label>开始日期<input type="date" name="period-start" value="{{.StartDate}}"></label>
+		<label>结束日期<input type="date" name="period-end" value="{{.EndDate}}"></label>
+		<button type="submit">查询</button>
+	</form>
+</div>
+
+<nav class="click-breadcrumbs" aria-label="点击分析层级">
+	{{range $i, $crumb := .Breadcrumbs}}{{if $i}} → {{end}}<a href="{{$crumb.URL}}">{{$crumb.Name}}</a>{{end}}
+</nav>
+
+<div class="click-summary">
+	<div class="click-card">总点击<strong>{{.Total | number}}</strong></div>
+	<div class="click-card">独立会话点击<strong>{{.Unique | number}}</strong></div>
+</div>
+
+<h2>按{{.LevelLabel}}查看</h2>
+{{if .Rows}}
+<table class="click-table">
+	<thead><tr>
+		<th>{{.LevelLabel}}</th>
+		<th class="num">总点击</th>
+		<th class="num">独立会话点击</th>
+	</tr></thead>
+	<tbody>
+	{{range .Rows}}<tr>
+		<td>{{if .URL}}<a href="{{.URL}}">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td>
+		<td class="num">{{.TotalClicks | number}}</td>
+		<td class="num">{{.UniqueClicks | number}}</td>
+	</tr>{{end}}
+	</tbody>
+</table>
+{{else}}
+	<div class="flash flash-i">当前时间范围和层级下暂无规范点击数据。</div>
+{{end}}
+
+<p class="click-note">“独立会话点击”按 GoatCounter 会话中某个具体按钮/元素的首次点击计数；在项目、页面或类型层汇总时，同一会话点击多个元素会分别计数。</p>
+<p class="click-note">仅统计路径格式为 <code>click/&lt;project&gt;.&lt;page&gt;.&lt;type&gt;.&lt;element&gt;</code> 的事件；旧版 <code>event/...</code> 或格式不合法的事件仍保留在原 Dashboard，但不会进入此分析页。</p>
+
+{{template "_backend_bottom.gohtml" .}}

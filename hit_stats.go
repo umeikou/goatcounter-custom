@@ -48,7 +48,7 @@ func (t tbl) Bulk(ctx context.Context) (zdb.BulkInsert, error) {
 }
 
 var Tables = struct {
-	HitCounts, RefCounts                        tbl
+	HitCounts, RefCounts, ClickCounts           tbl
 	BrowserStats, SystemStats, SizeStats        tbl
 	LocationStats, LanguageStats, CampaignStats tbl
 }{
@@ -57,6 +57,13 @@ var Tables = struct {
 		Columns:    []string{"site_id", "path_id", "hour", "total"},
 		Constraint: "site_id#path_id#hour",
 		Update:     `total = hit_counts.total + excluded.total`,
+	},
+	ClickCounts: tbl{
+		Table:      "click_counts",
+		Columns:    []string{"site_id", "path_id", "hour", "total_clicks", "unique_clicks"},
+		Constraint: "site_id#path_id#hour",
+		Update: `total_clicks = click_counts.total_clicks + excluded.total_clicks,
+			unique_clicks = click_counts.unique_clicks + excluded.unique_clicks`,
 	},
 	RefCounts: tbl{
 		Table:      "ref_counts",

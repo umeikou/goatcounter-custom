@@ -81,6 +81,7 @@
 				{{end}}
 			</div>
 			<div id="usermenu">
+				<a {{if has_prefix .Path "/clicks"}}class="active" {{end}}href="{{.Base}}/clicks">点击分析</a> |
 				<a {{if eq .Path "/help"}}class="active" {{end}}href="{{.Base}}/help">{{.T "top-nav/documentation|Help"}}</a> |
 				{{if .User.AccessSettings}}<a {{if has_prefix .Path "/settings"}}class="active" {{end}}href="{{.Base}}/settings">{{.T "top-nav/settings|Settings"}}</a> |{{end}}
 				<a {{if has_prefix .Path "/user"}}class="active" {{end}}href="{{.Base}}/user">{{.User.EmailShort}}</a> |

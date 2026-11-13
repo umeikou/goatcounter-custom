@@ -137,6 +137,7 @@ func UpdateStats(ctx context.Context, site *goatcounter.Site, siteID goatcounter
 
 	funs := []func(context.Context, []goatcounter.Hit) error{
 		updateHitCounts,
+		updateClickCounts,
 		updateRefCounts,
 		updateBrowserStats,
 		updateSystemStats,
@@ -213,7 +214,7 @@ func vacuumDeleted(ctx context.Context) error {
 		log.Module("vacuum").Infof(ctx, "vacuum site %s/%d", s.Code, s.ID)
 		err := zdb.TX(ctx, func(ctx context.Context) error {
 			for _, t := range []string{"hits", "paths",
-				"hit_counts", "ref_counts",
+				"hit_counts", "click_counts", "ref_counts",
 				"browser_stats", "system_stats", "location_stats", "language_stats", "size_stats",
 				"campaign_stats", "exports", "api_tokens", "users", "sites"} {
 

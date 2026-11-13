@@ -1,0 +1,14 @@
+create table click_counts (
+	site_id        integer        not null,
+	path_id        integer        not null,
+
+	hour           timestamp      not null                 {{check_timestamp "hour"}},
+	total_clicks   integer        not null,
+	unique_clicks  integer        not null,
+
+	constraint "click_counts#site_id#path_id#hour" unique(site_id, path_id, hour) {{sqlite "on conflict replace"}}
+);
+{{replica "click_counts" "click_counts#site_id#path_id#hour"}}
+create index "click_counts#hour"    on click_counts {{psql "using brin"}}(hour);
+create index "click_counts#site_id" on click_counts(site_id);
+create index "click_counts#path_id" on click_counts(path_id);

@@ -154,6 +154,21 @@ create table hit_counts (
 create index "hit_counts#hour"    on hit_counts {{psql "using brin"}}(hour);
 create index "hit_counts#site_id" on hit_counts(site_id);
 
+create table click_counts (
+	site_id        integer        not null,
+	path_id        integer        not null,
+
+	hour           timestamp      not null                 {{check_timestamp "hour"}},
+	total_clicks   integer        not null,
+	unique_clicks  integer        not null,
+
+	constraint "click_counts#site_id#path_id#hour" unique(site_id, path_id, hour) {{sqlite "on conflict replace"}}
+);
+{{replica "click_counts" "click_counts#site_id#path_id#hour"}}
+create index "click_counts#hour"    on click_counts {{psql "using brin"}}(hour);
+create index "click_counts#site_id" on click_counts(site_id);
+create index "click_counts#path_id" on click_counts(path_id);
+
 create table ref_counts (
 	site_id        integer        not null,
 	path_id        integer        not null,
@@ -377,6 +392,7 @@ insert into version values
 	('2026-02-12-1-rm-hit_stats'),
 	('2026-02-13-1-hits-width-postgres'),
 	('2026-02-13-1-hits-width-sqlite'),
-	('2026-02-25-1-indexes');
+	('2026-02-25-1-indexes'),
+	('2026-08-07-1-click-counts');
 
 -- vim:ft=sql:tw=0
